@@ -111,7 +111,7 @@ def predict_type_facenet(image_perturbed, cleancrop):
         device=device
     )
 
-    resnet = torch.load('/home/featurize/work/Gashon/fit5230/resnet_model.pth',map_location='cuda:0').to(device)
+    resnet = torch.load('./common/resnet_model.pth',map_location='cuda:0').to(device)
     resnet.eval()
     resnet.classify = True
     
@@ -156,7 +156,7 @@ def initial_predict_facenet(image_perturbed):
         device=device
     )
 
-    resnet = torch.load('/home/featurize/work/Gashon/fit5230/resnet_model.pth',map_location='cuda:0').to(device)
+    resnet = torch.load('./common/resnet_model.pth',map_location='cuda:0').to(device)
     resnet.eval()
     resnet.classify = True
     

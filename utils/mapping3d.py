@@ -18,14 +18,15 @@ import math
 from torchvision import datasets
 from utils import stick
 
-sys.path.append('..')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common')))
+
 import face3d
 from face3d.face3d import mesh
 from face3d.face3d.morphable_model import MorphabelModel
 
 def landmarks_68(img):
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor('/home/featurize/work/Gashon/fit5230/Adv-Stickers_RHDE/utils/shape_predictor_68_face_landmarks.dat')
+    predictor = dlib.shape_predictor('./common/shape_predictor_68_face_landmarks.dat')
     pic_array = np.array(img)
     h, w, d = pic_array.shape
     r,g,b = cv2.split(pic_array)

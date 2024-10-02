@@ -269,7 +269,7 @@ def attack(idx,true_label,initial_pic,sticker,opstickercv,magnification,\
     
     rank, pred_p = eval('predict.predict_type_{}([initial_pic],cleancrop)'.format(threat_model))
     rank2, pred_p2 = eval('predict.predict_type_{}(attack_image,cleancrop)'.format(threat_model))
-    attack_image[0].save('/home/featurize/work/Gashon/fit5230/Adv-Stickers_RHDE/results_img/{}.png'.format(idx))
+    attack_image[0].save('results_img/{}.png'.format(idx))
     
     prior_probs = pred_p[0][target_class].item()
     predicted_class = rank2[0][0]

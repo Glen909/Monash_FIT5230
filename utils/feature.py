@@ -10,7 +10,7 @@ def face_landmarks(initial_pic):
     dotsets = np.zeros((1,81,2))
     detector = dlib.get_frontal_face_detector()
     #predictor = dlib.shape_predictor('./shape_predictor_68_face_landmarks.dat')
-    predictor = dlib.shape_predictor('/home/featurize/work/Gashon/fit5230/Adv-Stickers_RHDE/utils/shape_predictor_81_face_landmarks.dat')
+    predictor = dlib.shape_predictor('./common/shape_predictor_81_face_landmarks.dat')
     
     pic_array = np.array(initial_pic)
     r,g,b = cv2.split(pic_array)
