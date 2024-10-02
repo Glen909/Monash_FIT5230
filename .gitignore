@@ -1,5 +1,7 @@
 __pycache__/*
-datasets/
+datasets/lfw/*
+datasets/lfw_cropped/*
+datasets/lfw_sampled/*
 utils/__pycache__/*
 common/resnet_model.pth
 BFM/BFM.mat
