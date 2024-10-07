@@ -1,0 +1,5 @@
+Name of Algorithm: 0
+Number of attacks: 1000
+Fooling rate: 60.00%
+Average Cdiff: 45.1745
+Total time taken: 174821.67 seconds

@@ -20,7 +20,7 @@ def differential_evolution(func, region, ct_energy,bounds, args=(), strategy='be
                            mutation=(0.5, 1), recombination=0.7, seed=None,
                            callback=None, disp=False, polish=True,
                            init='latinhypercube', atol=0):
-    print("0")
+    print("2")
     solver = DifferentialEvolutionSolver(func, region, ct_energy,bounds, args=args,
                                          strategy=strategy, maxiter=maxiter,
                                          popsize=popsize, tol=tol,
@@ -279,6 +279,8 @@ class DifferentialEvolutionSolver(object):
         # do the optimisation.
         for nit in xrange(1, self.maxiter + 1):
             # evolve the population by a generation
+            # self.scale = self.adjust_mutation(nit, self.maxiter)
+            self.scale, self.cross_over_probability = self.adjust_parameters(nit, self.maxiter)
             try:
                 next(self)
             except StopIteration:
@@ -624,3 +626,9 @@ class DifferentialEvolutionSolver(object):
         self.random_number_generator.shuffle(idxs)
         idxs = idxs[:number_samples]
         return idxs
+
+    def adjust_parameters(self, iteration, max_iter):
+    # 动态调整 mutation 和 recombination 的结合
+        mutation = 0.9 - 0.4 * (iteration / max_iter)
+        recombination = 0.9 - 0.3 * (iteration / max_iter)
+        return mutation, recombination

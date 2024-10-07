@@ -20,7 +20,7 @@ def differential_evolution(func, region, ct_energy,bounds, args=(), strategy='be
                            mutation=(0.5, 1), recombination=0.7, seed=None,
                            callback=None, disp=False, polish=True,
                            init='latinhypercube', atol=0):
-    print("0")
+    print("1")
     solver = DifferentialEvolutionSolver(func, region, ct_energy,bounds, args=args,
                                          strategy=strategy, maxiter=maxiter,
                                          popsize=popsize, tol=tol,
@@ -356,9 +356,10 @@ class DifferentialEvolutionSolver(object):
         ## CHANGES: self.func operates on the entire parameters array
         ##############
         itersize = max(0, min(len(self.population), self.maxfun - self._nfev + 1))
-        candidates = self.population[:itersize]
-        parameters = np.array([self._scale_parameters(c) for c in candidates]) 
-        energies,rank ,convert,pred_p,valid = self.func(parameters,0, *self.args)
+        # 直接对整个种群的参数进行缩放
+        parameters = self._scale_parameters(self.population[:itersize])
+        # 通过 self.func 一次性计算所有候选解的能量值
+        energies, rank, convert, pred_p, valid = self.func(parameters, 0, *self.args)
         self.population_energies = energies
         self.parampopulation = parameters
         self.rank, self.pred_p, self.valid = rank, pred_p, valid
@@ -498,17 +499,14 @@ class DifferentialEvolutionSolver(object):
         # next() is required for compatibility with Python2.7.
         return self.__next__()
 
-    def _scale_parameters(self, trial):
-        """
-        scale from a number between 0 and 1 to parameters.
-        """
-        return self.__scale_arg1 + (trial - 0.5) * self.__scale_arg2
+    def _scale_parameters(self, trials):
+        # 直接对整个种群进行参数缩放
+        return self.__scale_arg1 + (trials - 0.5) * self.__scale_arg2
 
     def _unscale_parameters(self, parameters):
-        """
-        scale from parameters to a number between 0 and 1.
-        """
+        # 直接对整个种群进行反缩放
         return (parameters - self.__scale_arg1) / self.__scale_arg2 + 0.5
+
 
     def _ensure_constraint(self, trial):
         """

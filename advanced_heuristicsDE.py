@@ -20,7 +20,7 @@ def differential_evolution(func, region, ct_energy,bounds, args=(), strategy='be
                            mutation=(0.5, 1), recombination=0.7, seed=None,
                            callback=None, disp=False, polish=True,
                            init='latinhypercube', atol=0):
-    print("0")
+    print("3")
     solver = DifferentialEvolutionSolver(func, region, ct_energy,bounds, args=args,
                                          strategy=strategy, maxiter=maxiter,
                                          popsize=popsize, tol=tol,
@@ -279,6 +279,8 @@ class DifferentialEvolutionSolver(object):
         # do the optimisation.
         for nit in xrange(1, self.maxiter + 1):
             # evolve the population by a generation
+            # self.scale = self.adjust_mutation(nit, self.maxiter)
+            self.scale, self.cross_over_probability = self.adjust_parameters(nit, self.maxiter)
             try:
                 next(self)
             except StopIteration:
@@ -356,9 +358,10 @@ class DifferentialEvolutionSolver(object):
         ## CHANGES: self.func operates on the entire parameters array
         ##############
         itersize = max(0, min(len(self.population), self.maxfun - self._nfev + 1))
-        candidates = self.population[:itersize]
-        parameters = np.array([self._scale_parameters(c) for c in candidates]) 
-        energies,rank ,convert,pred_p,valid = self.func(parameters,0, *self.args)
+        # 直接对整个种群的参数进行缩放
+        parameters = self._scale_parameters(self.population[:itersize])
+        # 通过 self.func 一次性计算所有候选解的能量值
+        energies, rank, convert, pred_p, valid = self.func(parameters, 0, *self.args)
         self.population_energies = energies
         self.parampopulation = parameters
         self.rank, self.pred_p, self.valid = rank, pred_p, valid
@@ -498,17 +501,14 @@ class DifferentialEvolutionSolver(object):
         # next() is required for compatibility with Python2.7.
         return self.__next__()
 
-    def _scale_parameters(self, trial):
-        """
-        scale from a number between 0 and 1 to parameters.
-        """
-        return self.__scale_arg1 + (trial - 0.5) * self.__scale_arg2
+    def _scale_parameters(self, trials):
+        # 直接对整个种群进行参数缩放
+        return self.__scale_arg1 + (trials - 0.5) * self.__scale_arg2
 
     def _unscale_parameters(self, parameters):
-        """
-        scale from parameters to a number between 0 and 1.
-        """
+        # 直接对整个种群进行反缩放
         return (parameters - self.__scale_arg1) / self.__scale_arg2 + 0.5
+
 
     def _ensure_constraint(self, trial):
         """
@@ -624,3 +624,16 @@ class DifferentialEvolutionSolver(object):
         self.random_number_generator.shuffle(idxs)
         idxs = idxs[:number_samples]
         return idxs
+    def adjust_mutation(self, iteration, max_iter):
+    # 线性衰减，初始为 0.9，逐渐减小到 0.5
+        return 0.9 - 0.4 * (iteration / max_iter)
+    def adjust_recombination(self, iteration, max_iter):
+    # 线性衰减，从 0.9 逐渐减小到 0.5
+        return 0.9 - 0.4 * (iteration / max_iter)
+    def adjust_parameters(self, iteration, max_iter):
+    # 动态调整 mutation 和 recombination 的结合
+        mutation = 0.9 - 0.4 * (iteration / max_iter)
+        recombination = 0.9 - 0.3 * (iteration / max_iter)
+        return mutation, recombination
+
+
