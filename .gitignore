@@ -7,3 +7,4 @@ common/resnet_model.pth
 BFM/BFM.mat
 common/shape_predictor_68_face_landmarks.dat
 common/shape_predictor_81_face_landmarks.dat
+results_img/*

@@ -9,10 +9,14 @@ class Config(object):
     scale = 12          # The scale of the sticker
 
     data_dir = './datasets/lfw'
-    idx = 188
+    idx = 99
     dataset = datasets.ImageFolder(data_dir)
     pic = dataset[idx][0]
     gtlabel = dataset[idx][1]
+    use_forehead_method = True
+    # original 0; vec 1; ada 2; advance 3
+    whichOneAlgorithm = 0
+
     
     
     # pic = Image.open()

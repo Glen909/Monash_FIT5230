@@ -19,7 +19,6 @@ from PIL import Image
 import os
 from facenet_pytorch import MTCNN, InceptionResnetV1, fixed_image_standardization, training
 
-from heuristicsDE import differential_evolution
 from utils import Config
 from utils import rotate
 from utils import stick
@@ -214,7 +213,7 @@ def region_produce(cleancrop,xs, true_label, searchspace, pack_searchspace, trac
     return inbreeding
 
 def attack(idx,true_label,initial_pic,sticker,opstickercv,magnification,\
-    cleancrop,zstore,target=None, maxiter=30, popsize=40):
+    cleancrop,zstore,target=None, maxiter=30, popsize=40, whichOneAlgorithm=0):
     # Change the target class based on whether this is a targeted attack or not
     targeted_attack = target is not None
     target_class = target if targeted_attack else true_label
@@ -259,6 +258,14 @@ def attack(idx,true_label,initial_pic,sticker,opstickercv,magnification,\
     def ct_energy(ranks, pred_ps, valids):
         return convert_energy(ranks, pred_ps, valids, target_class)
     # Differential Evolution
+    if whichOneAlgorithm == 0:
+        from heuristicsDE import differential_evolution
+    elif whichOneAlgorithm == 1:
+        from heuristicsDE_vector import differential_evolution
+    elif whichOneAlgorithm == 2:
+        from heuristicsDE_ada import differential_evolution
+    elif whichOneAlgorithm == 3:
+        from advanced_heuristicsDE import differential_evolution
     attack_result = differential_evolution(
         predict_fn, region_fn, ct_energy, bounds, maxiter=maxiter, popsize=popsize,
         recombination=1, atol=-1, callback=callback_fn, polish=False)
@@ -291,18 +298,6 @@ def attack(idx,true_label,initial_pic,sticker,opstickercv,magnification,\
     vector = [x, y, factor, angle, sid, attack_result.x[0]]
 
     return [actual_class, predicted_class, success, cdiff, prior_probs, predicted_probs, vector,d1,score1,d2,score2]
-
-def save_fooling_rate_to_file(fooling_rate, num_attacks):
-    # Get the current date and time in the format: year-month-day_hour-minute-second
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = f'fooling_rate_{current_time}.txt'
-    
-    # Save the fooling rate and attack statistics to a file
-    with open(filename, 'w') as f:
-        f.write(f"Number of attacks: {num_attacks}\n")
-        f.write(f"Fooling rate: {fooling_rate * 100:.2f}%\n")
-    
-    print(f"Results saved to {filename}")
 
 # Step 1: Load the sticker image
 def load_sticker(sticker_path):
@@ -345,6 +340,15 @@ def extract_forehead_area(pic):
         # Crop the forehead area
         forehead_area = image_rgb[forehead_y1:forehead_y2, forehead_x1:forehead_x2]
         
+        # uniform_color = np.array([140, 181, 216], dtype=np.uint8)
+        
+        # # Fill the forehead area with the uniform color
+        # forehead_area[:, :] = uniform_color
+
+        # new_width = forehead_area.shape[1] // 2
+        # new_height = forehead_area.shape[0] // 2
+        # forehead_area_resized = cv2.resize(forehead_area, (new_width, new_height))
+
         return forehead_area
     else:
         raise ValueError("No faces detected in the image.")
@@ -358,131 +362,147 @@ def generate_new_sticker(forehead_area, sticker_width, sticker_height):
     return resized_forehead
 
 
-# if __name__=="__main__":
+def save_attack_statistics_to_file(fooling_rate, average_cdiff, total_attacks, total_time, whichOneAlgorithm):
+    """
+    Save the fooling rate, average cdiff, total attacks, and total runtime statistics to a file.
+
+    :param fooling_rate: The fooling rate as a percentage.
+    :param average_cdiff: The average cdiff calculated from the attacks.
+    :param total_attacks: The total number of attacks performed.
+    :param total_time: The total time taken for all attacks (in seconds).
+    """
+    # Get the current date and time in the format: year-month-day_hour-minute-second
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f'attack_statistics_{current_time}.txt'
     
-#     model_set = ['arcface', 'facenet', 'sphereface','cosface']
-#     pinf, ninf = 99.9999999, 0.0000001
-#     convert = False          # indicate whether DE needs to re-compute energies to compare with target result
-#     start = False            # whether start target attack from untarget style
-#     latter = 0               # target class
-#     generate_rank, generate_score, best_rank, best_score = [],[],[],[]
-#     timess = 0               # Record the query times based on batch
+    # Save the fooling rate, average cdiff, total attacks, and total runtime to a file
+    with open(filename, 'w') as f:
+        f.write(f"Name of Algorithm: {whichOneAlgorithm}\n")
+        f.write(f"Number of attacks: {total_attacks}\n")
+        f.write(f"Fooling rate: {fooling_rate * 100:.2f}%\n")
+        f.write(f"Average Cdiff: {average_cdiff:.4f}\n")
+        f.write(f"Total time taken: {total_time:.2f} seconds\n")
     
-#     opt = Config()
-#     threat_model = model_set[opt.id_threat]
-#     bound = opt.bound
+    print(f"Results saved to {filename}")
 
-#     # 全局加载贴纸的像素和必要参数
-#     sticker_path = './stickers/{}.png'.format(opt.sticker_name)
-#     sticker_img, sticker_width, sticker_height, sticker_pixels = load_sticker(sticker_path)
-
-#     # 记录总攻击次数和成功攻击次数
-#     total_attacks = 1
-#     successful_attacks = 0
-
-#     selected_idxs = np.random.choice(range(5748), total_attacks, replace=False)
-#     for idx in selected_idxs:
-#         # 读取图像和标签信息
-#         initial_pic = opt.pic  # 根据 idx 或其他逻辑更新 opt.pic
-#         true_label = opt.gtlabel  # 根据 idx 更新真实标签
-        
-#         "--- sticker processing ---"
-#         # 提取人脸的额头区域
-#         forehead_area = extract_forehead_area(opt.pic)
-
-        
-#         # 根据提取的额头区域生成与原贴纸相同尺寸的新的贴纸
-#         new_sticker = generate_new_sticker(forehead_area, sticker_width, sticker_height)
-        
-#         # 转换新的贴纸为可操作的格式
-#         scale1 = sticker_img.size[0] // 23
-#         scale2 = opt.scale * 0.8
-#         magnification = scale2 / scale1
-#         operate_sticker = stick.change_sticker(new_sticker, scale1)
-#         sticker = stick.change_sticker(new_sticker, scale2)
-#         opstickercv = rotate.img_to_cv(operate_sticker)
-        
-#         # 获取初始预测
-#         rank, _, cleancrop = eval('predict.initial_predict_{}([initial_pic])'.format(threat_model))
-
-#         if rank[0][0] == true_label:
-#             print(f"Starting attack on idx {idx}...")
-#             zstore = mapping3d.generate_zstore(initial_pic)
-            
-#             # 使用新的贴纸进行攻击
-#             result = attack(idx, true_label, initial_pic, sticker, opstickercv, magnification, cleancrop, zstore)
-#             print(result)
-            
-#             # 判断攻击是否成功 (success 在返回结果中的位置是 [2])
-#             if result[2]:
-#                 successful_attacks += 1
-    
-#     # 计算 fooling rate
-#     fooling_rate = successful_attacks / total_attacks
-
-#     # 打印统计结果
-#     print(f"Total attacks: {total_attacks}")
-#     print(f"Successful attacks: {successful_attacks}")
-#     print(f"Fooling rate: {fooling_rate * 100:.2f}%")
-    
-#     # 保存结果到 txt 文件
-#     save_fooling_rate_to_file(fooling_rate, total_attacks)
+import time
 
 if __name__=="__main__":
     
-    model_set = ['arcface', 'facenet', 'sphereface','cosface']
+    model_set = ['arcface', 'facenet', 'sphereface', 'cosface']
     pinf, ninf = 99.9999999, 0.0000001
     convert = False          # indicate whether DE needs to re-compute energies to compare with target result
     start = False            # whether start target attack from untarget style
     latter = 0               # target class
-    generate_rank, generate_score, best_rank, best_score = [],[],[],[]
+    generate_rank, generate_score, best_rank, best_score = [], [], [], []
     timess = 0               # Record the query times based on batch
     
     opt = Config()
     threat_model = model_set[opt.id_threat]
     bound = opt.bound
 
-    # 记录总攻击次数和成功攻击次数
-    total_attacks = 1
+    # Record total attacks and successful attacks
+    total_attacks = 1000  # Set total attacks (example value)
     successful_attacks = 0
-
-    selected_idxs = np.random.choice(range(5748), total_attacks, replace=False)
-    for idx in selected_idxs:
-        # 读取图像和标签信息
-        initial_pic = opt.pic  # 根据 idx 或其他逻辑更新 opt.pic
-        true_label = opt.gtlabel  # 根据 idx 更新真实标签
-        
-        "--- sticker processing ---"
-        stickerpath = './stickers/{}.png'.format(opt.sticker_name)
-        stickerpic = Image.open(stickerpath)
-        scale1 = stickerpic.size[0] // 23
-        scale2 = opt.scale
-        magnification = scale2 / scale1
-        operate_sticker = stick.change_sticker(stickerpic, scale1)
-        sticker = stick.change_sticker(stickerpic, scale2)
-        opstickercv = rotate.img_to_cv(operate_sticker)
-        rank, _, cleancrop = eval('predict.initial_predict_{}([initial_pic])'.format(threat_model))
-
-        if rank[0][0] == true_label:
-            print(f"Starting attack on idx {idx}...")
-            zstore = mapping3d.generate_zstore(initial_pic)
-            result = attack(idx, true_label, initial_pic, sticker, opstickercv, magnification, cleancrop, zstore)
-            print(result)
-            
-            # 判断攻击是否成功 (success 在返回结果中的位置是 [2])
-            if result[2]:
-                successful_attacks += 1
+    total_cdiff = 0  # To accumulate cdiff values
     
-    # 计算 fooling rate
-    fooling_rate = successful_attacks / total_attacks
+    selected_idxs = np.random.choice(range(5748), total_attacks, replace=False)
 
-    # 打印统计结果
+    # Start the timer
+    start_time = time.time()
+
+    for idx in selected_idxs:
+        # Load image and label information
+        initial_pic = opt.dataset[idx][0]
+        true_label = opt.dataset[idx][1]
+        
+        if opt.use_forehead_method:
+            try:
+                "--- sticker processing ---"
+                # Load sticker for processing
+                sticker_path = './stickers/{}.png'.format(opt.sticker_name)
+                sticker_img, sticker_width, sticker_height, sticker_pixels = load_sticker(sticker_path)
+                
+                # Extract forehead area and generate new sticker
+                forehead_area = extract_forehead_area(initial_pic)
+                new_sticker = generate_new_sticker(forehead_area, sticker_width, sticker_height)
+
+                # Convert new sticker to a modifiable format
+                scale1 = sticker_img.size[0] // 23
+                scale2 = opt.scale * 0.8
+                magnification = scale2 / scale1
+                operate_sticker = stick.change_sticker(new_sticker, scale1)
+                sticker = stick.change_sticker(new_sticker, scale2)
+                opstickercv = rotate.img_to_cv(operate_sticker)
+
+                # Get initial prediction
+                rank, _, cleancrop = eval('predict.initial_predict_{}([initial_pic])'.format(threat_model))
+
+                if rank[0][0] == true_label:
+                    print(f"Starting attack on idx {idx}...")
+                    zstore = mapping3d.generate_zstore(initial_pic)
+
+                    # Perform attack with new sticker
+                    result = attack(idx, true_label, initial_pic, sticker, opstickercv, magnification, cleancrop, zstore, whichOneAlgorithm=opt.whichOneAlgorithm)
+                    print(result)
+
+                    # Check if the attack was successful
+                    if result[2]:
+                        successful_attacks += 1
+                    
+                    # Add the cdiff value from the result (assuming it's in the result[3] position)
+                    total_cdiff += result[3]  
+            except Exception as e:
+                print(f"Error generating sticker: {e}")
+                continue  # 跳到下一个循环
+        else:
+            "--- alternative sticker processing ---"
+            # Load sticker for processing
+            stickerpath = './stickers/{}.png'.format(opt.sticker_name)
+            stickerpic = Image.open(stickerpath)
+            scale1 = stickerpic.size[0] // 23
+            scale2 = opt.scale
+            magnification = scale2 / scale1
+            operate_sticker = stick.change_sticker(stickerpic, scale1)
+            sticker = stick.change_sticker(stickerpic, scale2)
+            opstickercv = rotate.img_to_cv(operate_sticker)
+            rank, _, cleancrop = eval('predict.initial_predict_{}([initial_pic])'.format(threat_model))
+
+            if rank[0][0] == true_label:
+                print(f"Starting attack on idx {idx}...")
+                zstore = mapping3d.generate_zstore(initial_pic)
+                result = attack(idx, true_label, initial_pic, sticker, opstickercv, magnification, cleancrop, zstore)
+                print(result)
+
+                # Check if the attack was successful
+                if result[2]:
+                    successful_attacks += 1
+                
+                # Add the cdiff value from the result (assuming it's in the result[3] position)
+                total_cdiff += result[3]
+
+    # Stop the timer
+    end_time = time.time()
+    total_time = end_time - start_time
+
+    # Calculate fooling rate
+    fooling_rate = successful_attacks / total_attacks
+    
+    # Calculate average cdiff
+    average_cdiff = total_cdiff / total_attacks
+
+    # Print statistics
     print(f"Total attacks: {total_attacks}")
     print(f"Successful attacks: {successful_attacks}")
     print(f"Fooling rate: {fooling_rate * 100:.2f}%")
-    
-    # 保存结果到 txt 文件
-    save_fooling_rate_to_file(fooling_rate, total_attacks)
+    print(f"Average Cdiff: {average_cdiff:.4f}")
+    print(f"Total time taken: {total_time:.2f} seconds")
+
+    # Save the fooling rate, average cdiff, and total time to a file
+    save_attack_statistics_to_file(fooling_rate, average_cdiff, total_attacks, total_time,opt.whichOneAlgorithm)
+
+
+
 
 
 
