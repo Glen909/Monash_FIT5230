@@ -358,9 +358,9 @@ class DifferentialEvolutionSolver(object):
         ## CHANGES: self.func operates on the entire parameters array
         ##############
         itersize = max(0, min(len(self.population), self.maxfun - self._nfev + 1))
-        # 直接对整个种群的参数进行缩放
+        # Directly scale the parameters of the entire population
         parameters = self._scale_parameters(self.population[:itersize])
-        # 通过 self.func 一次性计算所有候选解的能量值
+        # Calculate the energy values ​​of all candidate solutions at once through self.func
         energies, rank, convert, pred_p, valid = self.func(parameters, 0, *self.args)
         self.population_energies = energies
         self.parampopulation = parameters
@@ -502,11 +502,11 @@ class DifferentialEvolutionSolver(object):
         return self.__next__()
 
     def _scale_parameters(self, trials):
-        # 直接对整个种群进行参数缩放
+        # Directly scale the parameters of the entire population
         return self.__scale_arg1 + (trials - 0.5) * self.__scale_arg2
 
     def _unscale_parameters(self, parameters):
-        # 直接对整个种群进行反缩放
+        # Directly descale the entire population
         return (parameters - self.__scale_arg1) / self.__scale_arg2 + 0.5
 
 
@@ -625,15 +625,18 @@ class DifferentialEvolutionSolver(object):
         idxs = idxs[:number_samples]
         return idxs
     def adjust_mutation(self, iteration, max_iter):
-    # 线性衰减，初始为 0.9，逐渐减小到 0.5
+        # Linear decay: starts at 0.9 and gradually decreases to 0.5
         return 0.9 - 0.4 * (iteration / max_iter)
+
     def adjust_recombination(self, iteration, max_iter):
-    # 线性衰减，从 0.9 逐渐减小到 0.5
+        # Linear decay: starts at 0.9 and gradually decreases to 0.5
         return 0.9 - 0.4 * (iteration / max_iter)
+
     def adjust_parameters(self, iteration, max_iter):
-    # 动态调整 mutation 和 recombination 的结合
+        # Dynamically adjust both mutation and recombination parameters
         mutation = 0.9 - 0.4 * (iteration / max_iter)
         recombination = 0.9 - 0.3 * (iteration / max_iter)
         return mutation, recombination
+
 
 

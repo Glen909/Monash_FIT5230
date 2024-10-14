@@ -454,7 +454,7 @@ if __name__=="__main__":
                     total_cdiff += result[3]  
             except Exception as e:
                 print(f"Error generating sticker: {e}")
-                continue  # 跳到下一个循环
+                continue  # continue next 
         else:
             "--- alternative sticker processing ---"
             # Load sticker for processing

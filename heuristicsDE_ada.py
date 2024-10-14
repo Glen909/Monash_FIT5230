@@ -628,7 +628,7 @@ class DifferentialEvolutionSolver(object):
         return idxs
 
     def adjust_parameters(self, iteration, max_iter):
-    # 动态调整 mutation 和 recombination 的结合
+    # Dynamically adjust the combination of mutation and recombination
         mutation = 0.9 - 0.4 * (iteration / max_iter)
         recombination = 0.9 - 0.3 * (iteration / max_iter)
         return mutation, recombination

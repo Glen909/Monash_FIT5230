@@ -356,9 +356,9 @@ class DifferentialEvolutionSolver(object):
         ## CHANGES: self.func operates on the entire parameters array
         ##############
         itersize = max(0, min(len(self.population), self.maxfun - self._nfev + 1))
-        # 直接对整个种群的参数进行缩放
+        # Directly scale the parameters of the entire population
         parameters = self._scale_parameters(self.population[:itersize])
-        # 通过 self.func 一次性计算所有候选解的能量值
+        # Calculate the energy values ​​of all candidate solutions at once through self.func
         energies, rank, convert, pred_p, valid = self.func(parameters, 0, *self.args)
         self.population_energies = energies
         self.parampopulation = parameters
@@ -500,11 +500,11 @@ class DifferentialEvolutionSolver(object):
         return self.__next__()
 
     def _scale_parameters(self, trials):
-        # 直接对整个种群进行参数缩放
+        # Directly scale the parameters of the entire population
         return self.__scale_arg1 + (trials - 0.5) * self.__scale_arg2
 
     def _unscale_parameters(self, parameters):
-        # 直接对整个种群进行反缩放
+        # Directly descale the entire population
         return (parameters - self.__scale_arg1) / self.__scale_arg2 + 0.5
 
 

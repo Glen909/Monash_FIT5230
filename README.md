@@ -1,57 +1,47 @@
-# Adversarial Stickers: A Stealthy Attack Method in the Physical World
-This repository contains the code for Adversarial Stickers introduced in the following paper
-[Adversarial Stickers: A Stealthy Attack Method in the Physical World](https://ieeexplore.ieee.org/abstract/document/9779913) (TPAMI 2022)
+# Adversarial Stickers: A Stealthy Attack Method in the Physical World (Modified)
+
+This repository is based on the code from the following paper:  
+[Adversarial Stickers: A Stealthy Attack Method in the Physical World](https://ieeexplore.ieee.org/abstract/document/9779913) (TPAMI 2022). We have made modifications to extend or enhance the original implementation. Please refer to the report for detailed explanations of our changes or use code diff to inspect the modifications.
+
 ## Preparation
 
 ### Environment Settings:
 
-This project is tested under the following environment settings:
-+ OS: Ubuntu 18.04
-+ GPU: Geforce 2080 Ti
-+ Python: 3.8.11
-+ PyTorch: 1.7.1+cu110
-+ Torchvision: 0.8.2+cu110
+To set up the environment, please install the required dependencies from the provided `requirements.txt` file:
 
-### Data Preparation：
-+ face
-Please download the dataset ([LFW](http://vis-www.cs.umass.edu/lfw/), [CelebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)) and place it in ```./datasets/```.
 
-The directory structure example is:
-```
-datasets
--datasets name
- --person 1
-   ---pic001
-   ---pic002
-   ---pic003  
-```
-+ stickers
-Prepare the pre-defined stickers and place them in ```./stickers/```.
-### Model Preparation：
-Tool models ([FaceNet](https://github.com/timesler/facenet-pytorch), [CosFace](https://github.com/deepinsight/insightface/tree/master/recognition), [SphereFace](https://github.com/clcarwin/sphereface\_pytorch)) should be placed in ```./models/```
+This will ensure all necessary libraries and versions are properly installed. Adjustments to the environment should be made based on your system configuration if necessary.
 
-The corresponding ```./utils/predict.py``` should be changed as needed.
+### Data Preparation:
+We follow the same structure for data preparation, with minor modifications to improve dataset handling. These adjustments include **[describe any changes made to dataset preprocessing, handling, etc.]**.
+
++ Face Data:
+Please download the dataset ([LFW](http://vis-www.cs.umass.edu/lfw/), [CelebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)) and place it in `./datasets/`.
+
+The directory structure remains the same:
+
+
++ Stickers:
+Pre-defined stickers should still be placed in `./stickers/`. **[Mention any changes if you've added or altered sticker generation methods or pre-processing steps.]**
+
+### Model Preparation:
+Tool models ([FaceNet](https://github.com/timesler/facenet-pytorch), [CosFace](https://github.com/deepinsight/insightface/tree/master/recognition), [SphereFace](https://github.com/clcarwin/sphereface_pytorch)) are required and should be placed in `./models/`.
+
+Make sure to adjust the corresponding `./utils/predict.py` if necessary. **[Mention any modifications made to the model loading or prediction pipeline.]**
+
 ### Other Necessary Tools:
+The additional tools and data needed remain the same, but ensure they align with any changes made in the modified version.
+
 + Python tools for [3D face](https://github.com/YadiraF/face3d/tree/master/face3d)
-+ BFM Data: ```./BFM/BFM.mat```
++ BFM Data: `./BFM/BFM.mat`
 + Shape predictor for face landmarks ([68](https://github.com/r4onlyrishabh/facial-detection/tree/master/dataset), [81](https://github.com/codeniko/shape_predictor_81_face_landmarks))
 
 ## Quick Start
-Hyperparameter settings: ```./utils/config.py```
+The hyperparameter settings are still managed in `./utils/config.py`. Please refer to our report for any modifications to these settings or review the code for specific updates.
 
-Running this command for attacks:
-```
-python attack_single.py
-```
+To run an attack, use the following command:
+
+Make sure to adjust paths and configurations based on the changes described above.
+
 ## Citation
-If you find our methods useful, please consider citing:
-```
-@article{wei2022adversarial,
-  title={Adversarial Sticker: A Stealthy Attack Method in the Physical World},
-  author={Wei, Xingxing and Guo, Ying and Yu, Jie},
-  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
-  year={2022},
-  publisher={IEEE}
-}
-```
-
+If you find the original methods useful, please consider citing the original paper:
