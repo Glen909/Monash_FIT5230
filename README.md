@@ -39,12 +39,39 @@ The additional tools and data needed remain the same, but ensure they align with
 ## Quick Start
 The hyperparameter settings are still managed in `./utils/config.py`. Please refer to our report for any modifications to these settings or review the code for specific updates.
 
-To run an attack, use the following command:
-```
-python attack_single.py
-```
+You can configure the settings based on your needs.
+
+### 1. Running the Attack Method from the Original Paper
+
+If you want to reproduce the attack method from the original paper, follow these steps:
+
+1. Set `use_forehead_method` to `False`.
+2. Set `whichOneAlgorithm` to `0`.
+3. Run the following command:
+
+    ```bash
+    python attack_single.py
+    ```
+
+### 2. Using the Forehead Area for the Attack
+
+If you want to use the forehead area as the region for the sticker attack, follow these steps:
+
+1. Set `use_forehead_method` to `True`.
+2. Depending on the algorithm you want to reproduce, set `whichOneAlgorithm` to one of the following values:
+    - `0`: Algorithm 0
+    - `1`: Algorithm 1
+    - `2`: Algorithm 2
+    - `3`: Algorithm 3
+
+3. Run the following command:
+
+    ```bash
+    python attack_single.py
+    ```
+
+### 3. Additional Information
+
+By default, `attack_single.py` will run 1000 attacks. You can adjust the number of attacks and other parameters in the script as needed for your experiments.
 
 Make sure to adjust paths and configurations based on the changes described above.
-
-## Citation
-If you find the original methods useful, please consider citing the original paper:
