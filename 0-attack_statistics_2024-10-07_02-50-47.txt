@@ -2,4 +2,4 @@ Name of Algorithm: 0
 Number of attacks: 1000
 Fooling rate: 61.00%
 Average Cdiff: 47.2852
-Total time taken: 174821.67 seconds
+Total time taken: 163732.73 seconds
